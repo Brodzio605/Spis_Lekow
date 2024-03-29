@@ -1,0 +1,33 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Strona główna";
+}
+
+@if (User.Identity.IsAuthenticated && User.FindFirst("Ranga")?.Value == "pacjent")
+
+{
+    <h1>Witaj na stronie głównej</h1>
+    <p>Witaj, @User.FindFirst("Id")?.Value @User.FindFirst("Imie")?.Value @User.FindFirst("Nazwisko")?.Value!</p>
+    <p>Obecna data: @DateTime.Now</p>
+    <p>Aby zobaczyć dzisiejszą rozpiskę leków, proszę przejść na stronę <a href="/Spis_leków">Spis Leków</a>.</p>
+    <p><a href="/Logout">Wyloguj się</a>.</p>
+
+ 
+}
+else if (User.Identity.IsAuthenticated && User.FindFirst("Ranga")?.Value == "moderator")
+{
+    <h1>Witaj na stronie głównej</h1>
+    <p>Witaj, @User.FindFirst("Id")?.Value @User.FindFirst("Imie")?.Value @User.FindFirst("Nazwisko")?.Value!</p>
+    <p>Obecna data: @DateTime.Now</p>
+    <p>Aby zobaczyć dzisiejszą rozpiskę leków, proszę przejść na stronę <a href="/Spis_leków">Spis Leków</a> a następnie proszę wybrać imię i nazwisko pacjenta z listy.</p>
+    <p><a href="/Logout">Wyloguj się</a>.</p>
+
+}
+ else
+{
+    <h1>Witaj na stronie głównej</h1>
+    <p>Obecna data: @DateTime.Now</p>
+    <p>Aby zobaczyć dzisiejszą rozpiskę leków, proszę <a href="/Login">zaloguj się</a>.</p>
+    
+}

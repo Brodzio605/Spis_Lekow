@@ -1,0 +1,32 @@
+﻿@page
+@model LoginModel
+
+<h1>Logowanie</h1>
+
+
+@if (!Model.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <ul>
+            @foreach (var key in Model.ModelState.Keys)
+            {
+                foreach (var error in Model.ModelState[key].Errors)
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            }
+        </ul>
+    </div>
+}
+
+<form method="post">
+    <div class="form-group">
+        <label for="login">Login:</label>
+        <input type="text" id="login" name="Input.Login" class="form-control" />
+    </div>
+    <div class="form-group">
+        <label for="password">Hasło:</label>
+        <input type="password" id="password" name="Input.Password" class="form-control" />
+    </div>
+    <button type="submit" class="btn btn-primary">Zaloguj</button>
+</form>

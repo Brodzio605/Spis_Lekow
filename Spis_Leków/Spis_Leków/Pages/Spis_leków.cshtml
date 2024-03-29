@@ -1,0 +1,191 @@
+﻿@page
+@model Spis_Leków.Pages.SpisLekowModel
+
+<style>
+    .table-container {
+        margin-top: 20px;
+    }
+
+        .table-container table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid #ccc;
+        }
+
+        .table-container th, .table-container td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ccc;
+        }
+
+        .table-container th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+</style>
+
+<h1>Spis Leków</h1>
+
+
+<div class="table-container"> 
+    
+
+    
+@if(User.Identity.IsAuthenticated && User.FindFirst("Ranga")?.Value == "pacjent")
+{
+<p>Witaj, @User.FindFirst("Imie")?.Value @User.FindFirst("Nazwisko")?.Value! Oto lista Twoich leków na dzisiaj</p>
+
+<table>
+    <thead>
+        <tr>
+            <th>Nazwa</th>
+            <th>Producent</th>
+            <th>Ilość</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var lek in Model.ListaLekow)
+        {
+            var iloscLeku = Model.LiczbaLekow
+            .FirstOrDefault(i => i.Lek_id == lek.Id)?.Ilosc ?? 0;
+
+            <tr>
+                <td>@lek.Nazwa</td>
+                <td>@lek.Producent</td>
+                <td>@iloscLeku</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<p>Aby wypełnić dzisiejszy formularz, proszę przejść na stronę <a href="/Formularz">Formularz</a>.</p>
+
+}
+else if (User.Identity.IsAuthenticated && User.FindFirst("Ranga")?.Value == "moderator")
+{
+    <h2>Wybierz użytkownika</h2>
+    <form method="get" asp-page="/Spis_leków">
+        <select name="uzytkownikId">
+            <option value="">Wybierz użytkownika...</option>
+            @foreach (var user in Model.Pacjenci)
+            {
+                <option value="@user.Id">@user.Imie @user.Nazwisko</option>
+            }
+        </select>
+        <button type="submit">Zobacz rozpiskę</button>
+    </form>
+
+    @if (!string.IsNullOrEmpty(Request.Query["uzytkownikId"]))
+    {
+        var wybranyUzytkownikId = int.Parse(Request.Query["uzytkownikId"]);
+        var wybranyUzytkownik = Model.Pacjenci.FirstOrDefault(u => u.Id == wybranyUzytkownikId);
+
+        if (wybranyUzytkownik != null)
+        {
+            <h2>Rozpiska leków na dziś dla użytkownika 
+               @wybranyUzytkownik.Imie @wybranyUzytkownik.Nazwisko</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nazwa</th>
+                        <th>Producent</th>
+                        <th>Ilość</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var lek in Model.ListaLekow)
+                    {
+                        var iloscLeku = Model.LiczbaLekow
+                        .FirstOrDefault(i => i.Lek_id == lek.Id )?.Ilosc ?? 0;
+
+                        <tr>
+                            <td>@lek.Nazwa</td>
+                            <td>@lek.Producent</td>
+                            <td>@iloscLeku</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            
+            <div class="table-container">
+
+
+                <h2>Wypełnione formularze użytkownika @wybranyUzytkownik.Imie @wybranyUzytkownik.Nazwisko </h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Dzień tygodnia</th>
+                                <th>Treść</th>
+                                <th>Przyjął dawkę</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var formularz in Model.ListaFormularzy)
+                            {
+                                <tr>
+                                    <td>@formularz.Data.ToShortDateString()</td>
+                                    <td>@formularz.Dzien_tygodnia</td>
+                                    <td>@formularz.Tresc</td>
+                                    <td>@(formularz.CzyPrzyjalesDawke ? "Tak" : "Nie")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                
+            </div>
+
+                <div class="table-container">
+                    <h2>Lista wszystkich leków użytkownika @wybranyUzytkownik.Imie @wybranyUzytkownik.Nazwisko</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nazwa</th>
+                                <th>Producent</th>
+                                <th>Ilość</th>
+                                <th>Cena</th>
+                                <th>Dzień tygodnia</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var lek in Model.ListaLekow2)
+                            {
+                                <tr>
+                                    <td>@lek.Nazwa</td>
+                                    <td>@lek.Producent</td>
+                                    <td>@lek.Ilosc</td>
+                                    <td>@lek.Cena</td>
+                                    <td>@lek.DzienTygodnia</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            
+        }
+            <form method="post">
+                <select name="wybranyLekId">
+                    <option value="">Wybierz lek...</option>
+                    @foreach (var lek in Model.ListaLekow2)
+                    {
+                        <option value="@lek.Id">@lek.Nazwa</option>
+                    }
+                </select>
+
+                <input type="number" name="iloscLeku" placeholder="Ilość" min="1" />
+
+                <button type="submit">Dodaj ilość leku</button>
+            </form>
+    }
+
+    
+}
+
+
+else
+{
+    <p>Aby zobaczyć dzisiejszą rozpiskę leków, proszę <a href="/Login">zaloguj się</a>.</p>
+}
+</div>
+
